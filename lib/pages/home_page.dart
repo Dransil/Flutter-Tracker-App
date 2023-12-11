@@ -10,7 +10,6 @@ import 'package:proyecto/pages/todo.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
-
   final User? user = Auth().currentUser;
 
   Future<void> signOut() async {
@@ -23,7 +22,7 @@ class HomePage extends StatelessWidget {
 
   Widget _userUid() {
     return Text(
-      'Bienvenid@ ${user?.email ?? 'User email'}',
+      'Bienvenid@ ${user?.displayName ?? 'User email'} ${user?.email ?? 'User email'} ${user?.uid ?? 'User email'}',
       style: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w900,
@@ -328,10 +327,9 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Icon(
-              Icons.person,
-              size: 240,
-              color: Colors.white,
+            CircleAvatar(
+              radius: 100.0,
+              backgroundImage: NetworkImage('${user?.photoURL}'),
             ),
             _userUid(),
             const SizedBox(height: 20),

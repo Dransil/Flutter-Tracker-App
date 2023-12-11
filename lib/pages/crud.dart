@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class ShowCrud extends StatelessWidget {
   const ShowCrud({super.key});
@@ -27,7 +28,7 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _apellidoController = TextEditingController();
 
   final CollectionReference _datos =
-      FirebaseFirestore.instance.collection('datos');
+      FirebaseFirestore.instance.collection('prueba');
 
   Future<void> _create() async {
     await showModalBottomSheet(
@@ -45,6 +46,8 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextField(
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 controller: _nombreController,
                 decoration: const InputDecoration(labelText: 'Nombre'),
               ),
@@ -57,14 +60,16 @@ class _HomePageState extends State<HomePage> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
                 onPressed: () async {
-                  final String name = _nombreController.text;
+                  final int name = int.parse(_nombreController.text);
                   final String lastname = _apellidoController.text;
+
                   if (lastname != '') {
-                    await _datos.add({"nombre": name, "apellidos": lastname});
+                    await _datos.add({"num": name, "texto": lastname});
                     _nombreController.text = '';
                     _apellidoController.text = '';
                     Navigator.of(context).pop();
@@ -81,8 +86,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _update([DocumentSnapshot? documentSnapshot]) async {
     if (documentSnapshot != null) {
-      _nombreController.text = documentSnapshot['nombre'];
-      _apellidoController.text = documentSnapshot['apellidos'];
+      _nombreController.text = documentSnapshot['num'].toString();
+      _apellidoController.text = documentSnapshot['texto'];
     }
 
     await showModalBottomSheet(
@@ -100,6 +105,8 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   controller: _nombreController,
                   decoration: const InputDecoration(labelText: 'Nombre'),
                 ),
@@ -112,16 +119,17 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                   ),
                   onPressed: () async {
-                    final String name = _nombreController.text;
+                    final int name = int.parse(_nombreController.text);
                     final String lastname = _apellidoController.text;
                     if (lastname != '') {
                       await _datos
                           .doc(documentSnapshot!.id)
-                          .update({"nombre": name, "apellidos": lastname});
+                          .update({"num": name, "texto": lastname});
                       _nombreController.text = '';
                       _apellidoController.text = '';
                       Navigator.of(context).pop();
@@ -162,8 +170,8 @@ class _HomePageState extends State<HomePage> {
                   return Card(
                     margin: const EdgeInsets.all(10),
                     child: ListTile(
-                      title: Text(documentSnapshot['nombre']),
-                      subtitle: Text(documentSnapshot['apellidos']),
+                      title: Text(documentSnapshot['num'].toString()),
+                      subtitle: Text(documentSnapshot['texto']),
                       trailing: SizedBox(
                         width: 100,
                         child: Row(

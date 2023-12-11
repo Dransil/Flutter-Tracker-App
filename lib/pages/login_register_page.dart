@@ -5,6 +5,7 @@ import 'package:proyecto/iconos/redes_icons_icons.dart';
 import '../auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'forgot_password.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -16,35 +17,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   String? errorMessage = '';
   bool isLogin = true;
-
-  final TextEditingController _controllerEmail = TextEditingController();
-  final TextEditingController _controllerPassword = TextEditingController();
-
-  Future<void> signInWithEmailAndPassword() async {
-    try {
-      await Auth().signInWithEmailAndPassword(
-        email: _controllerEmail.text,
-        password: _controllerPassword.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
-    }
-  }
-
-  Future<void> createUserWithEmailAndPassword() async {
-    try {
-      await Auth().createUserWithEmailAndPassword(
-        email: _controllerEmail.text,
-        password: _controllerPassword.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
-    }
-  }
 
   Widget _title() {
     return const Text('SafeTrack');
@@ -102,39 +74,6 @@ class _LoginPageState extends State<LoginPage> {
         ));
   }
 
-  Widget _submitButton() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-        onPressed: isLogin
-            ? signInWithEmailAndPassword
-            : createUserWithEmailAndPassword,
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.green,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-        ),
-        child: Text(
-          isLogin ? 'Ingresar' : 'Registrar',
-        ),
-      ),
-    );
-  }
-
-  Widget _loginOrRegisterButton() {
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          isLogin = !isLogin;
-        });
-      },
-      child: Text(
-        isLogin ? '¿No tienes cuenta?' : '¿Tienes cuenta?',
-        style: const TextStyle(color: Colors.white),
-      ),
-    );
-  }
-
   Widget _icon() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -180,6 +119,39 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Future<User?> signInWithGooglefunc() async {
+    // Tu código actual para iniciar sesión con Google
+    await AuthService().signInWithGoogle();
+
+    // Obtener el usuario actual después de la autenticación con Google
+    final User? user = Auth().currentUser;
+
+    // Llamada al método de registro automático después de iniciar sesión con Google
+    if (user != null) {
+      await _registerUserIfNotExists(user);
+    }
+
+    return user;
+  }
+
+  Future<void> _registerUserIfNotExists(User? user) async {
+    // Verificar si el usuario ya existe en la base de datos
+    final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .get();
+    if (!userDoc.exists) {
+      // Si el usuario no existe, crea un nuevo documento en la colección 'users'
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        'email': user.email,
+        'displayName': user.displayName,
+        'photoURL': user.photoURL,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,17 +171,11 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             children: <Widget>[
               _icon(),
-              const SizedBox(height: 6),
-              _entryField('Correo electrónico', _controllerEmail),
-              const SizedBox(height: 5),
-              _entryField('Contraseña', _controllerPassword),
               _errorMessage(),
               _forgotpassword(),
-              _submitButton(),
-              _loginOrRegisterButton(),
               InkWell(
                 onTap: () {
-                  AuthService().signInWithGoogle();
+                  signInWithGooglefunc();
                 },
                 child: Container(
                   alignment: Alignment.center,
