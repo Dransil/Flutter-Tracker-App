@@ -120,28 +120,22 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<User?> signInWithGooglefunc() async {
-    // Tu código actual para iniciar sesión con Google
     await AuthService().signInWithGoogle();
-
-    // Obtener el usuario actual después de la autenticación con Google
     final User? user = Auth().currentUser;
-
-    // Llamada al método de registro automático después de iniciar sesión con Google
     if (user != null) {
       await _registerUserIfNotExists(user);
     }
-
     return user;
   }
 
   Future<void> _registerUserIfNotExists(User? user) async {
-    // Verificar si el usuario ya existe en la base de datos
+    //Verificacion de existencia GAAA
     final DocumentSnapshot userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(user!.uid)
         .get();
     if (!userDoc.exists) {
-      // Si el usuario no existe, crea un nuevo documento en la colección 'users'
+      //Crear usuario en collection('users') si este no existe
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'uid': user.uid,
         'email': user.email,

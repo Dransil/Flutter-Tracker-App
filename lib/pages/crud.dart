@@ -155,7 +155,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         appBar: AppBar(
           title: const Center(child: Text('Familiares')),
-          backgroundColor: Colors.green,
         ),
         backgroundColor: const Color.fromARGB(162, 7, 206, 159),
         body: StreamBuilder(

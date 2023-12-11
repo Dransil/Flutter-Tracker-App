@@ -121,14 +121,6 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              child: _serviceError!.isEmpty
-                  ? Text('Mostrando las coordenadas '
-                      '(${currentLatLng.latitude}, ${currentLatLng.longitude}).')
-                  : Text('Error '
-                      '$_serviceError'),
-            ),
             Flexible(
               child: FlutterMap(
                 mapController: _mapController,
