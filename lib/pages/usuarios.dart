@@ -6,8 +6,9 @@ class UsersList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Usuarios'),
+        title: Center(child: Text('Usuarios')),
       ),
+      backgroundColor: const Color.fromARGB(162, 7, 206, 159),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('users').snapshots(),
         builder: (context, snapshot) {

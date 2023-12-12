@@ -7,6 +7,7 @@ import 'package:proyecto/pages/crud.dart';
 import 'package:proyecto/pages/maplivelocation.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:proyecto/pages/perfil.dart';
+import 'package:proyecto/pages/reconspeech.dart';
 import 'package:proyecto/pages/usuarios.dart';
 
 class HomePage extends StatelessWidget {
@@ -249,6 +250,52 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Widget _goToRecon(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const Reconai()));
+      },
+      child: Container(
+        alignment: Alignment.center,
+        margin: const EdgeInsets.symmetric(horizontal: 50),
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        height: 55,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(221, 255, 255, 255),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xDD475269).withOpacity(0.3),
+              blurRadius: 5,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.help_outline,
+              size: 24,
+              color: Colors.green,
+            ),
+            Text(
+              "  Ayuda",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: Color.fromARGB(255, 0, 0, 0),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _icon() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -294,6 +341,8 @@ class HomePage extends StatelessWidget {
             _goToCrud(context),
             const SizedBox(height: 6),
             _goToLiveLocation(context),
+            const SizedBox(height: 6),
+            _goToRecon(context),
             const SizedBox(height: 6),
             _goToDanger(context),
             const SizedBox(height: 6),
