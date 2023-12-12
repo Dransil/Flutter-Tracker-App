@@ -1,13 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:proyecto/auth.dart';
 import 'package:flutter/material.dart';
-// Suitable for most situations
-// Only import if required functionality is not exposed by default
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:proyecto/pages/crud.dart';
 import 'package:proyecto/pages/maplivelocation.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:proyecto/pages/perfil.dart';
-import 'package:proyecto/pages/todo.dart';
+import 'package:proyecto/pages/usuarios.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
@@ -19,18 +19,6 @@ class HomePage extends StatelessWidget {
 
   Widget _title() {
     return const Text('SafeTrack');
-  }
-
-  Widget _userUid() {
-    return Text(
-      'Bienvenid@ ${user?.displayName ?? 'User email'}',
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w900,
-        color: Color.fromARGB(255, 0, 0, 0),
-        letterSpacing: 1,
-      ),
-    );
   }
 
   Widget _signOutButton() {
@@ -78,57 +66,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _goToMap(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const LiveLocationPage1()));
-      },
-      child: Container(
-        alignment: Alignment.center,
-        margin: const EdgeInsets.symmetric(horizontal: 50),
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        height: 55,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(221, 255, 255, 255),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xDD475269).withOpacity(0.3),
-              blurRadius: 5,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 24,
-              color: Colors.green,
-            ),
-            Text(
-              "  Mapa con dispositivo",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: Color.fromARGB(255, 0, 0, 0),
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _goToCrud(BuildContext context) {
     return InkWell(
       onTap: () {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const ShowCrud()));
+            context, MaterialPageRoute(builder: (context) => UsersList()));
       },
       child: Container(
         alignment: Alignment.center,
@@ -175,52 +117,6 @@ class HomePage extends StatelessWidget {
       onTap: () {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => const LiveLocationPage()));
-      },
-      child: Container(
-        alignment: Alignment.center,
-        margin: const EdgeInsets.symmetric(horizontal: 50),
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        height: 55,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(221, 255, 255, 255),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xDD475269).withOpacity(0.3),
-              blurRadius: 5,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.location_on_sharp,
-              size: 24,
-              color: Colors.green,
-            ),
-            Text(
-              "  Ubicación actual",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-                color: Color.fromARGB(255, 0, 0, 0),
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _goToTodo(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const LiveLocationPage1()));
       },
       child: Container(
         alignment: Alignment.center,
@@ -353,6 +249,23 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  Widget _icon() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'SafeTrack',
+          style: GoogleFonts.antonio(fontSize: 70, color: Colors.white),
+        ),
+        const Icon(
+          Icons.beenhere_outlined,
+          size: 150,
+          color: Colors.white,
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -374,16 +287,9 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            _userUid(),
-            const SizedBox(height: 20),
-            CircleAvatar(
-              radius: 100.0,
-              backgroundImage: NetworkImage('${user?.photoURL}'),
-            ),
+            _icon(),
             const SizedBox(height: 20),
             _goToPerfil(context),
-            const SizedBox(height: 6),
-            _goToMap(context),
             const SizedBox(height: 6),
             _goToCrud(context),
             const SizedBox(height: 6),

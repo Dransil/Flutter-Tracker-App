@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
+import 'package:proyecto/auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 //import 'package:permission_handler/permission_handler.dart';
 
 class LiveLocationPage extends StatefulWidget {
@@ -15,6 +19,7 @@ class LiveLocationPage extends StatefulWidget {
 }
 
 class _LiveLocationPageState extends State<LiveLocationPage> {
+  final User? user = Auth().currentUser;
   LocationData? _currentLocation;
   late final MapController _mapController;
 
@@ -26,12 +31,86 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
   int interActiveFlags = InteractiveFlag.all;
 
   final Location _locationService = Location();
+  List<Marker> _markers = [];
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
     initLocationService();
+    _checkAndAddLocationField();
+    _loadUserLocations();
+  }
+
+  Future<void> _checkAndAddLocationField() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .get();
+
+      // Verificar si el campo 'location' existe y es nulo
+      if (!userDoc.exists || userDoc.data()!['location'] == null) {
+        // Si no existe o es nulo, agregar el campo de ubicación
+        print('Falta ubicacion');
+        await _updateUserLocation();
+      } else {
+        print('Ubicacion existente');
+      }
+    } catch (e) {
+      print('Error checking/adding location field: $e');
+    }
+  }
+
+  Future<void> _updateUserLocation() async {
+    if (_currentLocation != null && user != null) {
+      print(
+          'Updating user location: ${_currentLocation!.latitude}, ${_currentLocation!.longitude}');
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .update({
+        'location':
+            GeoPoint(_currentLocation!.latitude!, _currentLocation!.longitude!),
+      });
+    }
+  }
+
+  Future<void> _loadUserLocations() async {
+    try {
+      final users = await FirebaseFirestore.instance.collection('users').get();
+
+      _markers.clear();
+
+      for (var userDoc in users.docs) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final userLocation = userData['location'] as GeoPoint?;
+
+        if (userLocation != null) {
+          String photoURL = userData['photoURL'] ?? '';
+
+          _markers.add(
+            Marker(
+              width: 20,
+              height: 20,
+              point: LatLng(userLocation.latitude, userLocation.longitude),
+              child: CircleAvatar(
+                radius: 15.0,
+                backgroundImage: NetworkImage(photoURL),
+              ),
+            ),
+          );
+        }
+      }
+
+      // Agrega este registro de depuración
+      print('Número de marcadores: ${_markers.length}');
+
+      setState(() {});
+    } catch (e) {
+      print('Error loading user locations: $e');
+    }
   }
 
   void initLocationService() async {
@@ -60,13 +139,14 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
               setState(() {
                 _currentLocation = result;
 
-                // If Live Update is enabled, move map center
-                if (_liveUpdate) {
-                  _mapController.move(
-                      LatLng(_currentLocation!.latitude!,
-                          _currentLocation!.longitude!),
-                      _mapController.zoom);
-                }
+                // // If Live Update is enabled, move map center
+                // if (_liveUpdate) {
+                //   _mapController.move(
+                //       LatLng(_currentLocation!.latitude!,
+                //           _currentLocation!.longitude!),
+                //       _mapController.zoom);
+                // }
+                _updateUserLocation();
               });
             }
           });
@@ -102,18 +182,6 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
       currentLatLng = LatLng(0, 0);
     }
 
-    final markers = <Marker>[
-      Marker(
-        width: 80,
-        height: 80,
-        point: currentLatLng,
-        builder: (context) => const Icon(
-          Icons.person_pin_rounded,
-          color: Colors.red,
-        ),
-      ),
-    ];
-
     return Scaffold(
       appBar: AppBar(title: const Text('Tu ubicación')),
       backgroundColor: const Color.fromARGB(162, 7, 206, 159),
@@ -125,10 +193,10 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
               child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  center:
-                      LatLng(currentLatLng.latitude, currentLatLng.longitude),
-                  zoom: 12,
-                  interactiveFlags: interActiveFlags,
+                  initialCenter: const LatLng(-17.375306, -66.158690),
+                  initialZoom: 12,
+                  // interactionOptions:
+                  //     InteractionOptions(debugMultiFingerGestureWinner: false),
                 ),
                 children: [
                   TileLayer(
@@ -140,7 +208,20 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
                     },
                     userAgentPackageName: 'com.example.app',
                   ),
-                  MarkerLayer(markers: markers),
+                  MarkerLayer(
+                    markers: _markers,
+                    // markers: [
+                    //   Marker(
+                    //     point: currentLatLng,
+                    //     width: 20,
+                    //     height: 20,
+                    //     child: CircleAvatar(
+                    //       radius: 100.0,
+                    //       backgroundImage: NetworkImage('${user?.photoURL}'),
+                    //     ),
+                    //   ),
+                    // ],
+                  ),
                 ],
               ),
             ),
@@ -152,6 +233,14 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
           onPressed: () {
             setState(() {
               _liveUpdate = !_liveUpdate;
+
+              // Mueve el centro solo si _liveUpdate está desactivado
+              if (!_liveUpdate && _currentLocation != null) {
+                _mapController.move(
+                    LatLng(_currentLocation!.latitude!,
+                        _currentLocation!.longitude!),
+                    _mapController.zoom);
+              }
 
               if (_liveUpdate) {
                 interActiveFlags = InteractiveFlag.rotate |
